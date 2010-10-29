@@ -1,8 +1,0 @@
-==Rails 3 template generator
-
-=== Getting started
-
-rails new app_name -JT -m http://github.com/mauriciodeamorim/tempra/raw/master/setup.rb
-
-
-
