@@ -39,6 +39,9 @@ g.fixture_replacement :factory_girl, :dir => "spec/support/factories"
 end
 GENERATORS
 
+rvm = ask("Do you want configure RVM?[Y,n] ")
+
+def rvm_setup 
 # RVM
 puts 'RVM configuration'
 file '.rvmrc', <<-RVMRC
@@ -50,6 +53,11 @@ run "rvm gemset create #{app_name}"
 run "rvm gemset use #{app_name}"
 #run "rvm ree-1.8.7@#{app_name} gem install bundler"
 #run "rvm ree-1.8.7@#{app_name} -S bundle install"
+puts '=====', 'RVM done!', '====='
+end
+
+rvm_setup if rvm.blank? || rvm.downcase == "y"
+
 run "gem install bundler"
 run "bundle install"
 
