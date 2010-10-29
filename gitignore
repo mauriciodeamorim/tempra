@@ -1,0 +1,12 @@
+*~
+*.gem
+*.tmproj
+*.sw?
+.DS_Store
+.bundle
+rerun.txt
+schema.rb
+config/database.yml
+db/*.sqlite3
+log/*.log
+tmp/**/*
