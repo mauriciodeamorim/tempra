@@ -2,7 +2,7 @@
 
 === Getting started
 
-rails new app_name -T -m http://github.com/mauriciodeamorim/tempra/raw/master/setup.rb
+rails new app_name -JT -m http://github.com/mauriciodeamorim/tempra/raw/master/setup.rb
 
 
 
