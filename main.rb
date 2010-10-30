@@ -1,5 +1,5 @@
 #tdir = "~/projetos/lab/tempra"
-tdir = "http://github.com/mauriciodeamorim/tempra"
+tdir = "http://github.com/mauriciodeamorim/tempra/raw/master"
 
 #app_name = ask("What is your application name?")
 
