@@ -7,3 +7,5 @@ rails new app_name -JT -m http://github.com/mauriciodeamorim/tempra/raw/master/s
 
 mysql
 rails new app_name -JT -d mysql -m http://github.com/mauriciodeamorim/tempra/raw/master/setup.rb
+
+Test #{app_name}

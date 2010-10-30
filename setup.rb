@@ -1,91 +1,113 @@
-# Delete unused files
-run "rm -Rf .gitignore README public/index.html public/javascripts/* test public/images/rails.png"
+def commit(message)
+  git :add => "."
+  git :commit => "-am '#{message}'"
+end
 
-# Gemfile generate
+git :init
+commit "Generate structure"
+
+run "rm -Rf .gitignore README public/index.html public/javascripts/* test public/images/rails.png"
+commit "Delete unused files"
+
 remove_file 'Gemfile'
 create_file 'Gemfile', <<-GEMFILE
 source 'http://rubygems.org'
 
+gem 'devise'
+gem 'hpricot' # need to generate devise:views
+gem 'inherited_resources', '>=1.1.2'
 gem 'rails', '3.0.1'
 gem 'rails3-generators'
-gem 'inherited_resources', '>=1.1.2'
-gem 'will_paginate', '>=3.0.pre2'
-gem 'devise'
+gem 'ruby_parser' # need to generate devise:views
 gem 'thin'
+gem 'will_paginate', '>=3.0.pre2'
 
 group :development, :test do
-gem 'cucumber', ">=0.6.3"
-gem 'cucumber-rails', ">=0.3.2"
-gem 'capybara', ">=0.3.6"
-gem 'database_cleaner', ">=0.5.0"
-gem 'spork', ">=0.8.4"
-gem "pickle", ">=0.4.2"
-gem "factory_girl_rails"
-gem "rspec-rails", :git => "git://github.com/rspec/rspec-rails.git"
-gem "rspec", :git => "git://github.com/rspec/rspec.git"
-gem "rspec-core", :git => "git://github.com/rspec/rspec-core.git"
-gem "rspec-expectations", :git => "git://github.com/rspec/rspec-expectations.git"
-gem "rspec-mocks", :git => "git://github.com/rspec/rspec-mocks.git"
-gem "ruby-debugger"
+  gem 'capybara', ">=0.3.6"
+  gem 'cucumber', ">=0.6.3"
+  gem 'cucumber-rails', ">=0.3.2"
+  gem "factory_girl_rails"
+  gem "pickle", ">=0.4.2"
+  gem "rspec", ">=2.0.0"
+  gem "rspec-rails", ">=2.0.0"
+  gem "ruby-debug"
+  gem 'spork', ">=0.8.4"  
 end
-
 GEMFILE
+commit "Remove old and include new Gemfile"
 
-# Application Generators Config
+#mongo = ask("Would you like to MongoDB? [Y,n]")
+#if mongo.blank? || mongo.downcase == "y"
+#  gem "mongoid_slug"
+#  gem "mongo_ext"
+#  gem "mongoid", "2.0.0.beta.19"
+#  gem "bson_ext", "1.1"
+#  gem "mongoid-rspec", :group => :test
+#  commit "Include gems to MongoDB database"
+#  application <<-GENERATORS
+#    config.generators do |g|
+#      g.orm :mongoid
+#    end
+#  GENERATORS  
+#end
+
 application <<-GENERATORS
-config.generators do |g|
-g.test_framework :rspec, :fixture => true
-g.fixture_replacement :factory_girl, :dir => "spec/support/factories"
-end
+  config.generators do |g|
+      g.test_framework :rspec, :fixture => true
+      g.fixture_replacement :factory_girl, :dir => "spec/support/factories"
+    end
 GENERATORS
+commit "Config framework tests into application file"
 
-rvm = ask("Do you want configure RVM?[Y,n] ")
-
-def rvm_setup 
-# RVM
-puts 'RVM configuration'
-file '.rvmrc', <<-RVMRC
-rvm gemset use #{app_name}
-RVMRC
-
-current_ruby = /^(.*):/.match(%x{rvm info})[1]
-run "rvm gemset create #{app_name}"
-run "rvm gemset use #{app_name}"
-#run "rvm ree-1.8.7@#{app_name} gem install bundler"
-#run "rvm ree-1.8.7@#{app_name} -S bundle install"
-puts '=====', 'RVM done!', '====='
+rvm = ask("Would you like to configure gemset into RVM - ree1.8.7? [Y,n]")
+if rvm.blank? || rvm.downcase == "y"
+  file '.rvmrc', <<-RVMRC
+  rvm gemset use #{app_name}
+  RVMRC
+  run "rvm gemset create #{app_name}"
+  run "rvm gemset use #{app_name}"
+  commit "Gemset #{app_name} with RVM ree1.8.7"
+  run "rvm ree-1.8.7@#{app_name} gem install bundler"
+  puts "=== Bundle install require few minutes and internet conection ==="
+  run "rvm ree-1.8.7@#{app_name} -S bundle install"
+  commit "Install gems with bundle"
+else
+  run "gem install bundler"
+  run "bundle install"
+  commit "Install gems with bundle"
 end
 
-rvm_setup if rvm.blank? || rvm.downcase == "y"
+generators = ask("Run generators? [Y,n] ")
+if generators.blank? || generators.downcase == "y"
+  run "rvm ree-1.8.7@#{app_name} -S rails g rspec:install"
+  commit "Rspec files and configurations"
+  run "rvm ree-1.8.7@#{app_name} -S rails g cucumber:install --capybara --rspec --spork"
+  commit "Cucumber files and configurations"
+  run "rvm ree-1.8.7@#{app_name} -S rails g pickle --path --email"
+  commit "Pickle files and configurations"
+  run "rvm ree-1.8.7@#{app_name} -S rails g devise:install"
+  commit "Devise files and configurations"
+  run "rvm ree-1.8.7@#{app_name} -S rails g devise User"
+  commit "Create user with Devise"
+  run "rvm ree-1.8.7@#{app_name} -S rails g devise Admin"
+  commit "Create admin with Devise"
+  run "rvm ree-1.8.7@#{app_name} -S rails g devise:views"
+  commit "Create Devise views"  
+#  run "rvm ree-1.8.7@#{app_name} -S rails g mongoid:config" if mongo.blank? || mongo.downcase == "y"
+#  commit "MongoId config"
+end
 
-run "gem install bundler"
-run "bundle install"
-
-
-# Run the generators
-#run "rvm ree-1.8.7@#{app_name} -S rails g rspec:install"
-generate "rspec:install"
-generate "cucumber:install --capybara --rspec --spork"
-generate "pickle --path --email"
-generate "friendly_id"
-generate "formtastic:install"
-generate "devise:install"
-generate "devise User"
-generate "devise Admin"
-
-
-# Getting Public Files
-#get 'http://github.com/mauriciodeamorim/tempra', ''
 get "http://github.com/rails/jquery-ujs/raw/master/src/rails.js", "public/javascripts/rails.js"
 get "http://code.jquery.com/jquery-1.4.2.min.js", "public/javascripts/jquery/jquery-1.4.2.min.js"
 get "http://github.com/mauriciodeamorim/tempra/raw/master/gitignore" ,".gitignore" 
+get "http://github.com/laguiar/rails3_template/raw/master/factory_girl.rb", "features/support/factory_girl.rb"
+get "http://github.com/laguiar/rails3_template/raw/master/devise_steps.rb", "features/step_definitions/devise_steps.rb"
+commit "Get public files"
 
 # Getting Application Views
 
-puts '=====', 'Git repository', '====='
-git :init
-git :add => '.'
-git :commit => '-am "Initial commit"'
- 
-puts 'DONE!'
+#Others templates
+#http://github.com/npverni/rails3-rumble-template
+#http://github.com/moscn/rails-3-template
+#http://github.com/shawn/shawns-rails3-template (folders)
 
